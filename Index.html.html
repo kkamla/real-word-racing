@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>REAL WORLD RACING – Prototyp</title>
+<style>
+:root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#081018;font-family:Arial,Helvetica,sans-serif}
+#game{position:fixed;inset:0}canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;inset:0;pointer-events:none;color:white;text-shadow:0 2px 5px #000}
+.top{display:flex;justify-content:space-between;align-items:flex-start;padding:14px;gap:10px}
+.panel{background:#07111dcc;border:1px solid #ffffff2b;border-radius:12px;padding:9px 13px;backdrop-filter:blur(8px)}
+.brand{font-weight:900;letter-spacing:2px;font-size:clamp(14px,2.5vw,22px)}.sub{font-size:10px;color:#b7c7d5;letter-spacing:2px;margin-top:3px}
+.stats{display:flex;gap:8px}.stat{text-align:center;min-width:65px}.num{font-size:clamp(17px,3vw,25px);font-weight:800}.cap{font-size:9px;color:#b7c7d5;letter-spacing:1px}
+#message{position:absolute;top:25%;left:50%;transform:translateX(-50%);font-size:clamp(28px,7vw,62px);font-weight:900;letter-spacing:4px;text-align:center}
+#message small{display:block;font-size:13px;letter-spacing:2px}
+#bottom{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:end;padding:16px;gap:12px}
+.controls{display:flex;gap:12px;align-items:end;pointer-events:auto}
+.pad{width:clamp(64px,13vw,100px);height:clamp(64px,13vw,100px);border-radius:50%;border:2px solid #ffffff70;background:#0a1b2dcc;color:white;font-size:24px;font-weight:bold;touch-action:none;user-select:none}
+.pedals{display:flex;gap:9px}.pedal{width:clamp(55px,10vw,78px);height:clamp(78px,14vw,105px);border-radius:12px;border:1px solid #ffffff70;color:white;font-weight:bold;background:#0b1c2ddd;touch-action:none}.gas{background:#087a45dd}.brake{background:#9c2424dd}
+#help{max-width:250px;font-size:11px;line-height:1.5;color:#dce8f2}
+#overlay{position:fixed;inset:0;background:linear-gradient(120deg,#06101bee,#091a25e8);display:flex;align-items:center;justify-content:center;padding:18px;color:white}
+.dialog{width:min(560px,100%);border:1px solid #ffffff35;border-radius:20px;padding:26px;background:#0a1825f2;box-shadow:0 25px 80px #0009}
+h1{font-size:clamp(27px,6vw,44px);line-height:1;margin:0 0 6px;letter-spacing:2px}.red{color:#ff3c35}.tag{color:#a9bac8;letter-spacing:3px;font-size:11px;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}.tile{background:#ffffff0b;border:1px solid #ffffff20;border-radius:10px;padding:12px}.tile b{display:block;font-size:12px;margin-bottom:5px}.tile span{font-size:11px;color:#b5c4d0}
+button.start{width:100%;padding:15px;border:0;border-radius:10px;background:#e52e2a;color:white;font-weight:900;font-size:16px;letter-spacing:2px}
+.note{font-size:11px;line-height:1.5;color:#9eb0bf;margin-top:14px}
+@media(max-width:600px){.top{padding:8px}.stats{gap:5px}.stat{min-width:49px}.panel{padding:7px 9px}#bottom{padding:10px}#help{display:none}.grid{gap:7px}.dialog{padding:20px}}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<div id="hud">
+ <div class="top">
+  <div class="panel"><div class="brand">REAL WORLD <span class="red">RACING</span></div><div class="sub">TRACK SERIES · PROTOTYP</div></div>
+  <div class="stats">
+   <div class="panel stat"><div class="num" id="speed">0</div><div class="cap">KM/H</div></div>
+   <div class="panel stat"><div class="num" id="lap">1/3</div><div class="cap">RUNDE</div></div>
+   <div class="panel stat"><div class="num" id="time">00:00</div><div class="cap">ZEIT</div></div>
+   <div class="panel stat"><div class="num" id="pos">4/4</div><div class="cap">PLATZ</div></div>
+  </div>
+ </div>
+ <div id="message"></div>
+ <div id="bottom">
+  <div class="controls"><button class="pad" id="left">◀</button><button class="pad" id="right">▶</button></div>
+  <div id="help" class="panel">PC: WASD oder Pfeiltasten<br>Handy/Tablet: Lenktasten + Gas/Bremse<br>Leertaste: Neustart · C: Kamera wechseln</div>
+  <div class="controls pedals"><button class="pedal brake" id="brake">BREMSEN</button><button class="pedal gas" id="gas">GAS</button></div>
+ </div>
+</div>
+<div id="overlay">
+ <div class="dialog">
+  <h1>REAL WORLD <span class="red">RACING</span></h1>
+  <div class="tag">3D RENNSTRECKEN · PLAYABLE PROTOTYPE</div>
+  <p>Steig ein und fahre dein erstes Rennen auf einer geschlossenen Rennstrecke – gegen drei KI-Fahrer.</p>
+  <div class="grid">
+   <div class="tile"><b>FAHRZEUG</b><span>Roter Supersportwagen</span></div>
+   <div class="tile"><b>RENNMODUS</b><span>3 Runden · 4 Fahrer</span></div>
+   <div class="tile"><b>KAMERA</b><span>Verfolger & Cockpit-Ansicht</span></div>
+   <div class="tile"><b>STEUERUNG</b><span>Tastatur oder Touch</span></div>
+  </div>
+  <button class="start" id="start">RENNEN STARTEN</button>
+  <div class="note">Hinweis: Diese einzelne HTML-Datei lädt die 3D-Engine beim Start aus dem Internet. Mehrspieler ist in diesem ersten Prototyp noch nicht online spielbar. Am PC im Browser öffnen; auf Handy/Tablet ebenfalls im Browser öffnen und Querformat verwenden.</div>
+ </div>
+</div>
+<script type="module">
+import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+const root=document.getElementById('game');
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x9fc4d8);scene.fog=new THREE.Fog(0x9fc4d8,100,310);
+const camera=new THREE.PerspectiveCamera(62,innerWidth/innerHeight,.1,700);
+const renderer=new THREE.WebGLRenderer({antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.15;root.appendChild(renderer.domElement);
+scene.add(new THREE.HemisphereLight(0xe5f4ff,0x526047,2.1));
+const sun=new THREE.DirectionalLight(0xfff0d8,3.1);sun.position.set(-65,100,55);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-130;sun.shadow.camera.right=130;sun.shadow.camera.top=130;sun.shadow.camera.bottom=-130;scene.add(sun);
+const mat=(c,r=.7,m=0)=>new THREE.MeshStandardMaterial({color:c,roughness:r,metalness:m});
+const grass=mat(0x47734a),asphalt=mat(0x252a30,.92),white=mat(0xf0f0e9),red=mat(0xc51e25,.28,.65),black=mat(0x111820,.45,.3),glass= new THREE.MeshStandardMaterial({color:0x172c3a,metalness:.5,roughness:.18});
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(600,600),grass);ground.rotation.x=-Math.PI/2;ground.position.y=-.35;ground.receiveShadow=true;scene.add(ground);
+const N=320, rx=76, rz=48, roadW=15;
+function path(t,offset=0){return new THREE.Vector3((rx+offset)*Math.cos(t),0,(rz+offset)*Math.sin(t))}
+function tube(points,radius,material){const curve=new THREE.CatmullRomCurve3(points,true);const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,500,radius,8,true),material);mesh.receiveShadow=true;scene.add(mesh);return mesh}
+const roadPts=[],innerPts=[],outerPts=[];for(let i=0;i<N;i++){let t=i/N*Math.PI*2;roadPts.push(path(t));innerPts.push(path(t,-roadW/2));outerPts.push(path(t,roadW/2))}
+const road=new THREE.Mesh(new THREE.RingGeometry(1,1,8),asphalt); // replaced by custom ribbon
+const verts=[],uv=[],idx=[];for(let i=0;i<=N;i++){let t=i/N*Math.PI*2;let p=path(t);let tangent=new THREE.Vector3(-rx*Math.sin(t),0,rz*Math.cos(t)).normalize();let side=new THREE.Vector3(tangent.z,0,-tangent.x);for(let s of [-roadW/2,roadW/2]){let v=p.clone().addScaledVector(side,s);verts.push(v.x,.02,v.z);uv.push(i/N,s/roadW)}if(i<N){let a=i*2;idx.push(a,a+1,a+2,a+1,a+3,a+2)}}
+const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(verts,3));geo.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));geo.setIndex(idx);geo.computeVertexNormals();const track=new THREE.Mesh(geo,asphalt);track.receiveShadow=true;scene.add(track);
+tube(innerPts,.38,white);tube(outerPts,.38,white);
+// curbs in alternating red/white blocks
+for(let side of [-1,1])for(let i=0;i<120;i++){let t=i/120*Math.PI*2,p=path(t,side*(roadW/2+.55));let curb=new THREE.Mesh(new THREE.BoxGeometry(2.2,.18,1.05),i%2?white:red);curb.position.set(p.x,.08,p.z);curb.rotation.y=-t;scene.add(curb)}
+// pit wall and safety barriers
+for(let side of [-1,1]){let pts=[];for(let i=0;i<N;i++)pts.push(path(i/N*Math.PI*2,side*(roadW/2+5)));tube(pts,.42,mat(0xb8c2c8));}
+// infield details, trees and grandstands
+for(let i=0;i<65;i++){let a=i*2.399,r=93+(i%7)*5,x=Math.cos(a)*r,z=Math.sin(a)*r*.66;if(Math.abs(x)<86&&Math.abs(z)<57)continue;const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.25,.4,3,7),mat(0x59402a));trunk.position.set(x,1.1,z);scene.add(trunk);const crown=new THREE.Mesh(new THREE.ConeGeometry(2.2,6,8),mat(i%2?0x285b36:0x356c3d));crown.position.set(x,5,z);crown.castShadow=true;scene.add(crown)}
+const stand=new THREE.Group();for(let i=0;i<18;i++){let s=new THREE.Mesh(new THREE.BoxGeometry(4,1+i*.16,12),mat(i%2?0x68727c:0x48535e));s.position.set(-8+i*4,0,-68);stand.add(s)}scene.add(stand);
+for(let i=0;i<8;i++){let pole=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,10,8),black);pole.position.set(-40+i*12,5,-60);scene.add(pole)}
+// start/finish stripe
+for(let i=0;i<16;i++){let tile=new THREE.Mesh(new THREE.BoxGeometry(2,.04,roadW/16),i%2?white:black);tile.position.set(rx,.08,-roadW/2+(i+.5)*roadW/16);scene.add(tile)}
+function makeCar(color=0xd51f28){
+ const g=new THREE.Group();const body=new THREE.Mesh(new THREE.BoxGeometry(2.25,.62,4.7),mat(color,.25,.65));body.position.y=.72;body.castShadow=true;g.add(body);
+ const nose=new THREE.Mesh(new THREE.BoxGeometry(1.9,.32,1.2),mat(color,.24,.6));nose.position.set(0,.58,-2.45);g.add(nose);
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.65,.72,2.05),glass);cabin.position.set(0,1.22,.15);cabin.castShadow=true;g.add(cabin);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(1.55,.12,1.25),mat(color,.25,.5));roof.position.set(0,1.62,.15);g.add(roof);
+ for(let x of [-1.18,1.18])for(let z of [-1.55,1.55]){let w=new THREE.Mesh(new THREE.CylinderGeometry(.43,.43,.28,20),black);w.rotation.z=Math.PI/2;w.position.set(x,.48,z);w.castShadow=true;g.add(w);let hub=new THREE.Mesh(new THREE.CylinderGeometry(.19,.19,.3,16),mat(0x9aa4ad,.3,.8));hub.rotation.z=Math.PI/2;hub.position.copy(w.position);g.add(hub)}
+ const spoiler=new THREE.Mesh(new THREE.BoxGeometry(2.5,.12,.45),black);spoiler.position.set(0,1.3,2.05);g.add(spoiler);
+ const lights=new THREE.Mesh(new THREE.BoxGeometry(1.7,.15,.08),mat(0xff2920,.2));lights.position.set(0,.8,2.36);g.add(lights);
+ return g;
+}
+const player=makeCar(0xc91520);scene.add(player);
+const aiColors=[0x1674cf,0xf2c32b,0xeeeeee], ais=aiColors.map((c,i)=>{let o={mesh:makeCar(c),progress:(i+1)*.035,speed:0.44+i*.012,lap:0};scene.add(o.mesh);return o});
+let angle=0,speed=0,lap=0,started=false,finished=false,elapsed=0,last=performance.now(),cockpit=false,steer=0,throttle=0,braking=0,offtrack=0;
+const keys={};addEventListener('keydown',e=>{keys[e.key.toLowerCase()]=true;if(e.key===' ')reset();if(e.key.toLowerCase()==='c')cockpit=!cockpit});addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
+function bind(id,down,up){let el=document.getElementById(id);el.addEventListener('pointerdown',e=>{e.preventDefault();el.setPointerCapture(e.pointerId);down()});['pointerup','pointercancel','lostpointercapture'].forEach(ev=>el.addEventListener(ev,up))}
+bind('left',()=>keys.touchleft=true,()=>keys.touchleft=false);bind('right',()=>keys.touchright=true,()=>keys.touchright=false);bind('gas',()=>keys.touchgas=true,()=>keys.touchgas=false);bind('brake',()=>keys.touchbrake=true,()=>keys.touchbrake=false);
+function reset(){angle=0;speed=0;lap=0;elapsed=0;finished=false;ais.forEach((a,i)=>{a.progress=(i+1)*.035;a.lap=0});started=true;document.getElementById('message').innerHTML='';}
+document.getElementById('start').onclick=()=>{document.getElementById('overlay').style.display='none';reset()};
+function placeCar(mesh,t,offset=0){let p=path(t,offset);mesh.position.set(p.x,.0,p.z);mesh.rotation.y=-Math.atan2(-rz*Math.cos(t),-rx*Math.sin(t));}
+function formatTime(s){let m=Math.floor(s/60),sec=Math.floor(s%60);return String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
+function animate(now){requestAnimationFrame(animate);let dt=Math.min((now-last)/1000,.04);last=now;
+ if(started&&!finished){elapsed+=dt;let left=keys.arrowleft||keys.a||keys.touchleft,right=keys.arrowright||keys.d||keys.touchright,gas=keys.arrowup||keys.w||keys.touchgas,brake=keys.arrowdown||keys.s||keys.touchbrake;
+ let steering=(right?1:0)-(left?1:0);speed+= (gas?.75:0)*dt;speed-= (brake?2.3:.17)*dt;speed=Math.max(0,Math.min(speed,1.02));angle+=steering*dt*(.22+speed*.72);angle+=speed*dt*.115;
+ let p=path(angle);offtrack=Math.abs(Math.sin(angle*2.3))*0;player.position.set(p.x,.0,p.z);player.rotation.y=-Math.atan2(-rz*Math.cos(angle),-rx*Math.sin(angle)) + steering*-.16;
+ if(angle>=Math.PI*2){lap++;angle-=Math.PI*2;if(lap>=3){finished=true;document.getElementById('message').innerHTML='ZIEL!<small>RENNEN BEENDET · LEERTASTE FÜR NEUSTART</small>'}}
+ ais.forEach((a,i)=>{a.progress+=a.speed*dt*.19;if(a.progress>=Math.PI*2){a.progress-=Math.PI*2;a.lap++}placeCar(a.mesh,a.progress,[-3.7,0,3.7][i])});
+ }
+ const p=player.position;
+ if(cockpit){camera.position.set(p.x,p.y+2.1,p.z);let fwd=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));camera.position.addScaledVector(fwd,-.5);camera.lookAt(p.x+fwd.x*22,1.8,p.z+fwd.z*22)}
+ else{let back=new THREE.Vector3(Math.sin(player.rotation.y),0,Math.cos(player.rotation.y));camera.position.lerp(new THREE.Vector3(p.x-back.x*10,5.4,p.z-back.z*10),.09);camera.lookAt(p.x,1,p.z)}
+ document.getElementById('speed').textContent=Math.round(speed*310);document.getElementById('lap').textContent=Math.min(lap+1,3)+'/3';document.getElementById('time').textContent=formatTime(elapsed);
+ const my=lap*2*Math.PI+angle;let place=1+ais.filter(a=>a.lap*2*Math.PI+a.progress>my).length;document.getElementById('pos').textContent=place+'/4';
+ renderer.render(scene,camera);
+}
+placeCar(player,0,0);ais.forEach((a,i)=>placeCar(a.mesh,a.progress,[-3.7,0,3.7][i]));camera.position.set(0,13,105);camera.lookAt(0,0,0);requestAnimationFrame(animate);
+addEventListener('resize',()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+</script>
+</body></html>
